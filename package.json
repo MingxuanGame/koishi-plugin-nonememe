@@ -1,0 +1,54 @@
+{
+  "name": "koishi-plugin-nonememe",
+  "description": "NoneMeme bot for Koishi.js",
+  "contributors": [
+    "MingxuanGame <MingxuanGame@outlook.com>"
+  ],
+  "version": "0.1.0",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint src --ext ts",
+    "format": "prettier --write .",
+    "pre-commit": "pre-commit run"
+  },
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "nonebot"
+  ],
+  "homepage": "https://github.com/MingxuanGame/koishi-plugin-nonememe",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MingxuanGame/koishi-plugin-nonememe"
+  },
+  "peerDependencies": {
+    "@koishijs/cache": "^0.1.3",
+    "koishi": "^4.11.7"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/parser": "^5.53.0",
+    "eslint": "^8.34.0",
+    "pre-commit": "^1.2.2",
+    "prettier": "^2.8.4"
+  },
+  "dependencies": {},
+  "koishi": {
+    "description": {
+      "en": "NoneMeme bot for Koishi.js",
+      "zh": "Koishi.js 的 nonebot 梗图插件"
+    },
+    "service": {
+      "required": [
+        "cache"
+      ]
+    }
+  }
+}
