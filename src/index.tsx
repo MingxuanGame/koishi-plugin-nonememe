@@ -37,7 +37,7 @@ export function apply(ctx: Context, config: Config) {
         logger.debug(`Name: ${name}`);
         const memes = await getMemes();
         const result: string[] = memes.filter((meme) =>
-          meme.toLowerCase().includes(name.toLowerCase())
+          meme.toLowerCase().includes(name.toLowerCase()),
         );
         logger.debug(`Found ${result}.`);
 
@@ -49,7 +49,7 @@ export function apply(ctx: Context, config: Config) {
           await session.send(
             <message forward>
               {makeMemeMessages(session.selfId, result.slice(0, 5))}
-            </message>
+            </message>,
           );
         }
       } catch (err) {
@@ -69,7 +69,7 @@ export function apply(ctx: Context, config: Config) {
             avatar="https://ghproxy.com/https://raw.githubusercontent.com/NoneMeme/NoneMeme/main/static/favicon.png"
           />
           {makeMemeMessage(meme)}
-        </message>
+        </message>,
       );
     }
     return messages;
@@ -113,7 +113,7 @@ export function apply(ctx: Context, config: Config) {
             Authorization: `token ${PAT}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       const memes = resp.data;
       return memes.map((meme) => meme.name);
