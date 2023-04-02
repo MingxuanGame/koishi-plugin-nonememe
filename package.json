@@ -38,7 +38,9 @@
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "prettier": "^2.8.4"
   },
-  "dependencies": {},
+  "dependencies": {
+    "file-type": "^18.2.1"
+  },
   "koishi": {
     "description": {
       "en": "NoneMeme bot for Koishi.js",
