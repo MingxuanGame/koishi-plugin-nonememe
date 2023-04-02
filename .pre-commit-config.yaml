@@ -19,3 +19,4 @@ repos:
           - eslint
           - "@typescript-eslint/eslint-plugin"
           - "@typescript-eslint/parser"
+          - "eslint-plugin-jsx-a11y"
