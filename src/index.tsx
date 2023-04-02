@@ -17,7 +17,7 @@ declare module "@koishijs/cache" {
 }
 
 const MEME_CACHE_KEY = "nonememe_memes";
-// const ART_CACHE_KEY = "nonememe_arts";
+const ART_CACHE_KEY = "nonememe_arts";
 
 export const Config: Schema<Config> = Schema.object({
   PAT: Schema.string().required().description("GitHub PAT"),
@@ -45,7 +45,7 @@ export function apply(ctx: Context, config: Config) {
         logger.debug(`Name: ${name}`);
         const memes = await getMemes();
         const result: string[] = memes.filter((meme) =>
-          meme.toLowerCase().includes(name.toLowerCase()),
+          meme.toLowerCase().includes(name.toLowerCase())
         );
         logger.debug(`Found ${result}.`);
 
@@ -57,7 +57,7 @@ export function apply(ctx: Context, config: Config) {
           await session.send(
             <message forward>
               {makeMemeMessages(session.selfId, result.slice(0, 5))}
-            </message>,
+            </message>
           );
         }
       } catch (err) {
@@ -127,7 +127,7 @@ export function apply(ctx: Context, config: Config) {
             avatar="https://ghproxy.com/https://raw.githubusercontent.com/NoneMeme/NoneMeme/main/static/favicon.png"
           />
           {makeMemeMessage(meme)}
-        </message>,
+        </message>
       );
     }
     return messages;
@@ -146,31 +146,35 @@ export function apply(ctx: Context, config: Config) {
     );
   }
 
-  async function getMemes(): Promise<string[]> {
+  async function getMemes(mode: "meme" | "art" = "meme"): Promise<string[]> {
+    const key = mode === "meme" ? MEME_CACHE_KEY : ART_CACHE_KEY;
     if (cache) {
-      const memes = await cache.get(MEME_CACHE_KEY);
+      const memes = await cache.get(key);
       if (memes) {
         return memes;
       }
     }
-    const memes = await fetchMemes(config.PAT);
-    logger.info(`Fetched ${memes.length} meme(s).`);
+    const memes = await fetchMemes(config.PAT, mode);
+    logger.info(`Fetched ${memes.length} ${mode}(s).`);
     if (cache) {
-      await cache.set(MEME_CACHE_KEY, memes, Time.minute * 10);
+      await cache.set(key, memes, Time.minute * 10);
     }
     return memes;
   }
-
-  async function fetchMemes(PAT: string): Promise<string[]> {
+  async function fetchMemes(
+    PAT: string,
+    mode: "meme" | "art" = "meme"
+  ): Promise<string[]> {
+    const name = mode === "meme" ? "图片梗" : "文字梗";
     try {
       const memes = await ctx.http.get(
-        "https://api.github.com/repos/NoneMeme/NoneMeme/contents/meme",
+        `https://api.github.com/repos/NoneMeme/NoneMeme/contents/${mode}`,
         {
           headers: {
             Authorization: `token ${PAT}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
       return memes.map((meme) => meme.name);
     } catch (err) {
@@ -182,9 +186,9 @@ export function apply(ctx: Context, config: Config) {
             throw new Error("文件夹未找到，可能为仓库更新");
         }
       }
-      logger.error("获取图片梗出现错误");
+      logger.error(`获取${name}出现错误`);
       logger.error(err);
-      throw new Error("获取图片梗出现错误");
+      throw new Error(`获取${name}出现错误`);
     }
   }
   async function uploadMeme(
