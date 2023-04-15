@@ -1,10 +1,14 @@
 import { Context, Schema, Time, h } from "koishi";
 import {} from "@koishijs/cache";
+import {} from "koishi-plugin-puppeteer";
+
 import { AxiosError } from "axios";
 import { fileTypeFromBuffer } from "file-type";
 
+import { makeHTML, markdown2HTML, render } from "./render";
+
 export const name = "nonememe";
-export const using = ["cache"] as const;
+export const using = ["cache", "puppeteer"] as const;
 
 export interface Config {
   PAT: string;
@@ -17,7 +21,7 @@ declare module "@koishijs/cache" {
 }
 
 const MEME_CACHE_KEY = "nonememe_memes";
-// const ART_CACHE_KEY = "nonememe_arts";
+const ART_CACHE_KEY = "nonememe_arts";
 
 export const Config: Schema<Config> = Schema.object({
   PAT: Schema.string().required().description("GitHub PAT"),
@@ -29,11 +33,26 @@ export function apply(ctx: Context, config: Config) {
 
   let username = "";
   let email = "";
+
   ctx
     .command("nonememe", "NoneBot 梗(nonememe.icu)")
     .alias("nbmeme")
     .alias("nb梗图")
     .action(({ session }) => session.execute("help nonememe"));
+
+  ctx
+    .command("nonememe.art <name:string>", "查询 NoneMeme 文字梗")
+    .action(async ({ session }, name) => {
+      await session.send(
+        h.image(
+          await render(
+            await ctx.puppeteer.page(),
+            makeHTML(markdown2HTML(name)),
+          ),
+          "image/png",
+        ),
+      );
+    });
 
   ctx
     .command("nonememe.search <name:string>", "查询 NoneBot 梗图")
@@ -68,7 +87,7 @@ export function apply(ctx: Context, config: Config) {
   ctx
     .command("nonememe.upload <name:string> <img>", "上传 NoneBot 梗图")
     .example(
-      "nonememe.upload 叛变 <image url='https://raw.githubusercontent.com/NoneMeme/NoneMeme/main/meme/叛变.png'/>"
+      "nonememe.upload 叛变 <image url='https://raw.githubusercontent.com/NoneMeme/NoneMeme/main/meme/叛变.png'/>",
     )
     .alias("add")
     .alias("push")
@@ -146,25 +165,29 @@ export function apply(ctx: Context, config: Config) {
     );
   }
 
-  async function getMemes(): Promise<string[]> {
+  async function getMemes(mode: "meme" | "art" = "meme"): Promise<string[]> {
+    const key = mode === "meme" ? MEME_CACHE_KEY : ART_CACHE_KEY;
     if (cache) {
-      const memes = await cache.get(MEME_CACHE_KEY);
+      const memes = await cache.get(key);
       if (memes) {
         return memes;
       }
     }
-    const memes = await fetchMemes(config.PAT);
-    logger.info(`Fetched ${memes.length} meme(s).`);
+    const memes = await fetchMemes(config.PAT, mode);
+    logger.info(`Fetched ${memes.length} ${mode}(s).`);
     if (cache) {
-      await cache.set(MEME_CACHE_KEY, memes, Time.minute * 10);
+      await cache.set(key, memes, Time.minute * 10);
     }
     return memes;
   }
-
-  async function fetchMemes(PAT: string): Promise<string[]> {
+  async function fetchMemes(
+    PAT: string,
+    mode: "meme" | "art" = "meme",
+  ): Promise<string[]> {
+    const name = mode === "meme" ? "图片梗" : "文字梗";
     try {
       const memes = await ctx.http.get(
-        "https://api.github.com/repos/NoneMeme/NoneMeme/contents/meme",
+        `https://api.github.com/repos/NoneMeme/NoneMeme/contents/${mode}`,
         {
           headers: {
             Authorization: `token ${PAT}`,
@@ -182,15 +205,15 @@ export function apply(ctx: Context, config: Config) {
             throw new Error("文件夹未找到，可能为仓库更新");
         }
       }
-      logger.error("获取图片梗出现错误");
+      logger.error(`获取${name}出现错误`);
       logger.error(err);
-      throw new Error("获取图片梗出现错误");
+      throw new Error(`获取${name}出现错误`);
     }
   }
   async function uploadMeme(
     PAT: string,
     name: string,
-    image: Buffer
+    image: Buffer,
   ): Promise<string> {
     if (!email || !username) {
       try {
@@ -202,7 +225,7 @@ export function apply(ctx: Context, config: Config) {
               Authorization: `token ${PAT}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         const emailObject = emails.filter((email) => email.primary)[0];
@@ -215,7 +238,7 @@ export function apply(ctx: Context, config: Config) {
               throw new Error("PAT 无效");
             case 403:
               throw new Error(
-                "此 PAT 无权访问邮箱信息，请检查此 PAT 是否拥有 user:email 权限"
+                "此 PAT 无权访问邮箱信息，请检查此 PAT 是否拥有 user:email 权限",
               );
           }
         }
@@ -252,7 +275,7 @@ export function apply(ctx: Context, config: Config) {
             Authorization: `token ${PAT}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       logger.success("Upload succeeded.");
       return resp.commit.sha.slice(0, 7);
