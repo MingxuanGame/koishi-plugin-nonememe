@@ -39,7 +39,10 @@
     "prettier": "^2.8.4"
   },
   "dependencies": {
-    "file-type": "^18.2.1"
+    "file-type": "^18.2.1",
+    "generate-github-markdown-css": "^5.1.0",
+    "jsdom": "^21.1.1",
+    "showdown": "^2.1.0"
   },
   "koishi": {
     "description": {
@@ -48,7 +51,8 @@
     },
     "service": {
       "required": [
-        "cache"
+        "cache",
+        "puppeteer"
       ]
     }
   }

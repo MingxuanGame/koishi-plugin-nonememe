@@ -1,10 +1,14 @@
 import { Context, Schema, Time, h } from "koishi";
 import {} from "@koishijs/cache";
+import {} from "koishi-plugin-puppeteer";
+
 import { AxiosError } from "axios";
 import { fileTypeFromBuffer } from "file-type";
 
+import { makeHTML, markdown2HTML, render } from "./render";
+
 export const name = "nonememe";
-export const using = ["cache"] as const;
+export const using = ["cache", "puppeteer"] as const;
 
 export interface Config {
   PAT: string;
@@ -29,11 +33,26 @@ export function apply(ctx: Context, config: Config) {
 
   let username = "";
   let email = "";
+
   ctx
     .command("nonememe", "NoneBot 梗(nonememe.icu)")
     .alias("nbmeme")
     .alias("nb梗图")
     .action(({ session }) => session.execute("help nonememe"));
+
+  ctx
+    .command("nonememe.art <name:string>", "查询 NoneMeme 文字梗")
+    .action(async ({ session }, name) => {
+      await session.send(
+        h.image(
+          await render(
+            await ctx.puppeteer.page(),
+            makeHTML(markdown2HTML(name)),
+          ),
+          "image/png",
+        ),
+      );
+    });
 
   ctx
     .command("nonememe.search <name:string>", "查询 NoneBot 梗图")
