@@ -29,7 +29,7 @@ Koishi.js 的 nonebot 梗图插件
 
 ## 配置
 
-* `PAT` GitHub PAT，需要勾选 scope: `user:email` 和 `public_repo`
+- `PAT` GitHub PAT，需要勾选 scope: `user:email` 和 `public_repo`
 
 ## 许可
 
