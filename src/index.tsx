@@ -68,7 +68,7 @@ export function apply(ctx: Context, config: Config) {
   ctx
     .command("nonememe.upload <name:string> <img>", "上传 NoneBot 梗图")
     .example(
-      "nonememe.upload 叛变 <image url='https://raw.githubusercontent.com/NoneMeme/NoneMeme/main/meme/叛变.png'/>"
+      "nonememe.upload 叛变 <image url='https://raw.githubusercontent.com/NoneMeme/NoneMeme/main/meme/叛变.png'/>",
     )
     .alias("add")
     .alias("push")
@@ -190,7 +190,7 @@ export function apply(ctx: Context, config: Config) {
   async function uploadMeme(
     PAT: string,
     name: string,
-    image: Buffer
+    image: Buffer,
   ): Promise<string> {
     if (!email || !username) {
       try {
@@ -202,7 +202,7 @@ export function apply(ctx: Context, config: Config) {
               Authorization: `token ${PAT}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         const emailObject = emails.filter((email) => email.primary)[0];
@@ -215,7 +215,7 @@ export function apply(ctx: Context, config: Config) {
               throw new Error("PAT 无效");
             case 403:
               throw new Error(
-                "此 PAT 无权访问邮箱信息，请检查此 PAT 是否拥有 user:email 权限"
+                "此 PAT 无权访问邮箱信息，请检查此 PAT 是否拥有 user:email 权限",
               );
           }
         }
@@ -252,7 +252,7 @@ export function apply(ctx: Context, config: Config) {
             Authorization: `token ${PAT}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       logger.success("Upload succeeded.");
       return resp.commit.sha.slice(0, 7);
